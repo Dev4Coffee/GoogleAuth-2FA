@@ -1,15 +1,29 @@
 package de.janeckert.ga2fa;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import de.janeckert.ga2fa.entities.Identity;
 import de.janeckert.ga2fa.entities.Login;
+import de.janeckert.ga2fa.service.IdentityService;
 
 @Controller
 public class LoginController {
+	
+	IdentityService identityService;
+	
+	
+	
+	public LoginController(IdentityService identityService) {
+		super();
+		this.identityService = identityService;
+	}
+
 	@GetMapping("/login")
 	public String showLogin() {
 		return "login";
@@ -18,11 +32,12 @@ public class LoginController {
 	//Check for Credentials
 	@PostMapping("/login")
 	public String login(@ModelAttribute(name="loginForm") Login login, Model m) {
-		String uname = login.getUsername();
+		Identity subject = this.identityService.retrieveIdentity(login.getUsername());
+
 		String pass = login.getPassword();
-		if(uname.equals("Admin") && pass.equals("Admin@123")) {
-			m.addAttribute("uname", uname);
-			m.addAttribute("pass", pass);
+		if( (subject != null) && pass.equals(subject.getPassword())) {
+			m.addAttribute("uname", subject.getName());
+			m.addAttribute("pass", subject.getPassword());
 			return "welcome";
 		}
 		m.addAttribute("error", "Credentials Incorrect");

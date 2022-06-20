@@ -21,10 +21,13 @@ public class LoginTest {
 	private final static String INVALID_USERNAME = "Whatever";
 	private final static String INVALID_PASSWORD = "Whatever";
 	private final static String ERROR_INVALID_CREDENTIALS = "Credentials Incorrect";
+	private final static String SUCCESS_VALID_CREDENTIALS = "You are authenticated!";
+	private final static String VALID_USERNAME = "Will";
+	private final static String VALID_PASSWORD = "Hireme";
 	
 	@BeforeAll
 	static void init() {
-		System.setProperty("webdriver.edge.driver", "L:\\workspace\\Selenium\\msedgedriver.exe");
+		System.setProperty("webdriver.edge.driver", "D:\\Selenium\\msedgedriver.exe");
 	}
 	
 	@Test
@@ -47,6 +50,31 @@ public class LoginTest {
 		driver.quit();
 		
 	}
+	
+	@Test
+	public void whenUsingCorrectCredentials_shouldAcceptLogin() {
+		EdgeOptions options = new EdgeOptions();
+		WebDriver driver = new EdgeDriver(options);
+		
+		driver.get(BASE_URL);
+		
+		WebElement un = driver.findElement(By.id("inputUsername"));
+		WebElement pw = driver.findElement(By.id("inputPassword"));
+		WebElement submit = driver.findElement(By.id("inputSubmit"));
+		
+		un.sendKeys(VALID_USERNAME);
+		pw.sendKeys(VALID_PASSWORD);
+		submit.click();
+		
+		Assertions.assertThat(driver.getPageSource()).contains(SUCCESS_VALID_CREDENTIALS);
+		
+		Assertions.assertThat(driver.manage().getCookieNamed("authorization")).isNotNull();
+		
+		driver.quit();
+		
+	}
+
+
 	
 	@Test
 	public void whenVisitingLoginPage_TheninputElementsShouldBePresent() {
