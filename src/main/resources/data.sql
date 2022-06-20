@@ -1,0 +1,1 @@
+INSERT INTO identities (id, name, password) VALUES (1, 'Will', 'Hireme');
