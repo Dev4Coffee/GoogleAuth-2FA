@@ -67,13 +67,36 @@ public class LoginTest {
 		submit.click();
 		
 		Assertions.assertThat(driver.getPageSource()).contains(SUCCESS_VALID_CREDENTIALS);
+				
+		driver.quit();
+		
+	}
+
+	
+	@Test
+	public void whenUsingCorrectCredentials_shouldReceiveAuthNCookie() {
+		EdgeOptions options = new EdgeOptions();
+		WebDriver driver = new EdgeDriver(options);
+		
+		driver.get(BASE_URL);
+		
+		WebElement un = driver.findElement(By.id("inputUsername"));
+		WebElement pw = driver.findElement(By.id("inputPassword"));
+		WebElement submit = driver.findElement(By.id("inputSubmit"));
+		
+		un.sendKeys(VALID_USERNAME);
+		pw.sendKeys(VALID_PASSWORD);
+		submit.click();
+		
+		driver.manage().getCookies().forEach(c -> {
+			System.out.println(c.getName() +" " + c.getValue());
+		});
 		
 		Assertions.assertThat(driver.manage().getCookieNamed("authorization")).isNotNull();
 		
 		driver.quit();
 		
 	}
-
 
 	
 	@Test
