@@ -14,7 +14,7 @@ import lombok.Data;
 public class Identity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	private long id;
+	private long identity_id;
 	private String name;
 	private String password;
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Controller
 @Data
-public class Login {
+public class LoginCredentials {
 	private String username;
 	private String password;
 }
