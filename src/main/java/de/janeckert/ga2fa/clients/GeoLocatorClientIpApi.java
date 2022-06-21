@@ -30,25 +30,30 @@ public class GeoLocatorClientIpApi implements GeoLocatorClient {
 	@Override
 	public @Nullable GeoCoordinate resolveGeoLocation(String ipAdress) {
 		RestTemplate template = new RestTemplate();
-		
-		ResponseEntity<String> resultLongitude = null;
-		ResponseEntity<String> resultLatitude = null;
+
+		ResponseEntity<String> resultLongitudeEntity = null;
+		ResponseEntity<String> resultLatitudeEntity = null;
 		try {
-			resultLongitude = template.getForEntity(new URI(String.format(URL_TEMPLATE_LONGITUDE, ipAdress)), String.class);
-			resultLatitude = template.getForEntity(new URI(String.format(URL_TEMPLATE_LATITUDE, ipAdress)), String.class);
+			resultLongitudeEntity = template.getForEntity(new URI(String.format(URL_TEMPLATE_LONGITUDE, ipAdress)), String.class);
+			resultLatitudeEntity = template.getForEntity(new URI(String.format(URL_TEMPLATE_LATITUDE, ipAdress)), String.class);
 		} catch (RestClientException | URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
-		if ((null == resultLatitude) || (null == resultLongitude)) {
+
+		// in any error scenario, most notably rate limiting on API side, return 0,0
+		try {
+			Double lat = Double.valueOf(resultLatitudeEntity.getBody());
+			Double lon = Double.valueOf(resultLongitudeEntity.getBody());
+
+			return GeoCoordinate.builder()
+					.latitude(lat)
+					.longitude(lon)				
+					.build();
+		} catch (Exception e) {
 			log.warn("Geocoordinates could not be resolved!");
-			return null;
 		}
-		
-		return GeoCoordinate.builder()
-				.latitude(Double.valueOf(resultLatitude.getBody()))
-				.longitude(Double.valueOf(resultLongitude.getBody()))				
-				.build();
+
+		return null;
 	}
 
 }

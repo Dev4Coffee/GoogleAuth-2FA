@@ -4,6 +4,7 @@ COPY src /usr/src/app/src
 
 COPY pom.xml /usr/src/app
 
+RUN mvn -q -f /usr/src/app/pom.xml clean dependency:resolve
 RUN mvn -q -f /usr/src/app/pom.xml clean package -DskipTests=true
 
 
