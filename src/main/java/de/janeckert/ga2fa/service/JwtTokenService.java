@@ -2,29 +2,37 @@ package de.janeckert.ga2fa.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Date;
-import java.util.UUID;
-
-import javax.swing.JWindow;
 
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 
+import de.janeckert.ga2fa.configuration.ApplicationConfiguration;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
 public class JwtTokenService implements TokenService {
+	private ApplicationConfiguration cfg;
+	
+	
+
+	public JwtTokenService(ApplicationConfiguration cfg) {
+		super();
+		this.cfg = cfg;
+	}
+
+
 
 	@Override
 	public String createToken(String seed, String username) {
 		log.warn("Skipping signing.");
 		Algorithm algorithm = Algorithm.none();
 		
-		Date expiry = Date.from(Instant.now().plus(10, ChronoUnit.MINUTES));
+		Date expiry = Date.from(Instant.now().plus(cfg.getTokenLifetime(), ChronoUnit.SECONDS));
 		
 		String token = JWT.create()
 				.withIssuer("GoogleAuth-2FA-App")
@@ -34,4 +42,13 @@ public class JwtTokenService implements TokenService {
 		return token;
 	}
 
+
+
+	@Override
+	public String returnClaim(String token, String claimname) {
+		DecodedJWT decodedJWT = JWT.decode(token);
+		return decodedJWT.getClaim(claimname).asString();
+	}
+
+	
 }

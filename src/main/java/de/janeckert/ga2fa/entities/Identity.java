@@ -17,4 +17,7 @@ public class Identity {
 	private long identity_id;
 	private String name;
 	private String password;
+	
+	private String mfaStrategy;
+	private String token;
 }

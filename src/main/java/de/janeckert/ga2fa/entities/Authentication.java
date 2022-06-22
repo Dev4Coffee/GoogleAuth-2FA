@@ -30,4 +30,6 @@ public class Authentication {
 	private Double longitude;
 	private Double latitude;
 	
+	private String device;
+	private Instant deviceExpiry;
 }

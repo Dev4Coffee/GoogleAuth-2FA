@@ -41,4 +41,12 @@ public class H2IdentityService implements IdentityService {
 		throw new RuntimeException("Not yet implemented!");
 	}
 
+	@Override
+	public void saveIdentity(Identity identity) {
+		this.identityRepository.save(identity);
+		
+	}
+	
+	
+
 }
