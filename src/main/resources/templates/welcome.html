@@ -7,16 +7,35 @@
 	</head>
 	
 	<body>
-		<div class="container">
-			<h3>You are authenticated!</h3>
-		 	Username <p th:text="${uname}"></p>
-		 	Password <p th:text="${pass}"></p>
+		<h3>You are authenticated!</h3>
+		<table border="2">
+			<tr>
+				<td>Username</td>
+				<td th:text="${uname}"></td>
+	        </tr>
+		 	
+			<tr>
+				<td>Token</td>
+				<td th:text="${token}"></td>
+
+	        </tr>
+		 	
+			<tr>
+				<td>Active</td>
+				<td th:text="${active}"></td>
+	        </tr>
+		 	
+			<tr>
+				<td>Location</td>
+				<td th:text="${location}"></td>
+	        </tr>
+        </table>
+		 
 	 
 	        <form th:action="@{/logout}" th:object="${logoutForm}" method="post">
-        		<div class="row button">
+        		<p>
 	    			<input type="submit" value="Logout" id="inputSubmitLogout">
-	     		</div>
+        		</p>
         	</form>
-		</div>
 	</body>
 </html>

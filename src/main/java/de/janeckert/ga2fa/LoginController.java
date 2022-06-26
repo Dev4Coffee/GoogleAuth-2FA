@@ -1,7 +1,5 @@
 package de.janeckert.ga2fa;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Base64;
 
@@ -15,13 +13,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.beust.jcommander.Strings;
+
 import de.janeckert.ga2fa.clients.GeoLocatorClient;
 import de.janeckert.ga2fa.configuration.ApplicationConfiguration;
 import de.janeckert.ga2fa.entities.Authentication;
 import de.janeckert.ga2fa.entities.Identity;
 import de.janeckert.ga2fa.entities.LoginCredentials;
 import de.janeckert.ga2fa.geo.GeoCoordinate;
-import de.janeckert.ga2fa.geo.GeoCoordinateUtils;
 import de.janeckert.ga2fa.service.AuthenticationEventService;
 import de.janeckert.ga2fa.service.IdentityService;
 import de.janeckert.ga2fa.service.TokenService;
@@ -54,8 +53,6 @@ public class LoginController {
 	public String showLogin(Model m, HttpServletRequest request, HttpServletResponse response) {
 		log.info("Reached root page.");
 
-		Cookie[] cookies = request.getCookies();
-
 		String authValue = GoogleAuth2FaApplication.getAuthorizationCookieValue(request);
 		
 		if (null == authValue) {
@@ -68,7 +65,16 @@ public class LoginController {
 			return "auth";
 		}
 		
+		if (!this.tokenService.validate(authValue)) {
+			log.info("Non-empty but invalid token found --> removal --> login");
+		}
+		
 		log.info("User authenticated --> welcome");
+		m.addAttribute("uname", this.tokenService.returnClaim(authValue, "sub"));
+		m.addAttribute("token", authValue);
+		m.addAttribute("active", this.tokenService.returnClaim(authValue, "active"));
+		m.addAttribute("location", this.tokenService.returnClaim(authValue, "location"));
+		
 		return "welcome";
 	}
 
@@ -76,33 +82,58 @@ public class LoginController {
 	public String login(@ModelAttribute(name="loginForm") LoginCredentials login, Model m, HttpServletRequest request, HttpServletResponse response) {
 		Identity subject = this.identityService.retrieveIdentity(login.getUsername());
 
-		String remoteIP = request.getRemoteAddr();
-
 		String pass = login.getPassword();
 		if( (subject != null) && pass.equals(subject.getPassword())) {
-			m.addAttribute("uname", subject.getName());
-			m.addAttribute("pass", subject.getPassword());
-			// create a cookie and add it to the response
-			String authToken = this.tokenService.createToken("secret", subject.getName());
-			Cookie cookie = new Cookie("Authorization", authToken);
-			response.addCookie(cookie);
+			
+			if (!subject.getActive()) {
+				m.addAttribute("error", "Account known but not active (missing MFA configuration?).");
+				return "auth";
+			}
+			
+		
+			
 
-			GeoCoordinate coord = this.geoclient.resolveGeoLocation(remoteIP);
+			GeoCoordinate coord = this.geoclient.resolveGeoLocation(request.getRemoteAddr());
 			String device = Base64.getEncoder().encodeToString(request.getHeader("User-Agent").getBytes());
 			// Save AuthN
+			Double latitude = (coord == null) ? 0 : coord.getLatitude();
+			Double longitude = coord == null ? 0 : coord.getLongitude();
+			
 			Authentication auth = Authentication.builder()
 					.principal(subject)
-					.latitude(coord == null ? 0 : coord.getLatitude())
-					.longitude(coord == null ? 0 : coord.getLongitude())
+					.latitude(latitude)
+					.longitude(longitude)
 					.device(device)
 					.deviceExpiry(Instant.now().plusSeconds(cfg.getDeviceRetentionTime()))
 					.timestamp(Instant.now())
 					.build();
 
 			this.authenticationService.saveAuthentication(auth);
+			
+			// create a cookie and add it to the response
+						String authToken = null;
+						
+						if(!Strings.isStringEmpty(subject.getToken())) {
+							if (this.tokenService.validate(subject.getToken())) {
+								authToken = subject.getToken();
+							}
+							authToken = this.tokenService.createToken("secret", subject.getName(), subject.getActive(), "(" + latitude + " , " + longitude + ")");
+						} else {
+							authToken = this.tokenService.createToken("secret", subject.getName(), subject.getActive(), "(" + latitude + " , " + longitude + ")");
+						}
+						
+						Cookie cookie = new Cookie("Authorization", authToken);
+						response.addCookie(cookie);
+			
 			subject.setToken(authToken);
 			this.identityService.saveIdentity(subject);
 
+
+			m.addAttribute("uname", subject.getName());
+			m.addAttribute("token", authToken);
+			m.addAttribute("active", subject.getActive());
+			m.addAttribute("location", "(" + latitude + " , " + longitude + ")");
+			
 			return "welcome";
 		}
 		m.addAttribute("error", "Credentials Incorrect");
@@ -126,6 +157,24 @@ public class LoginController {
 		
 	}
 	
+	@PostMapping("/register")
+	public String handleRegister(HttpServletRequest request, HttpServletResponse response, @ModelAttribute(name="registerForm") LoginCredentials login) {
+		log.info("Reached first registration step to provide username and password.");
+		return "register";
+		
+	}
+	
+	@PostMapping("/registermfa")
+	public String handleRegisterMfa(HttpServletRequest request, HttpServletResponse response) {
+		log.info("Reached second registration step to add TOTP support to account.");
+		return "registermfa";
+	}
+	
+	@PostMapping("/processmfa")
+	public String processRegisterMfa(HttpServletRequest request, HttpServletResponse response) {
+		log.info("Mfa information submitted.");
+		return "redirect:/";
+	}
 	
 	private static void removeAuthCookie(HttpServletResponse response) {
 		log.info("Authorization cookie is being removed.");

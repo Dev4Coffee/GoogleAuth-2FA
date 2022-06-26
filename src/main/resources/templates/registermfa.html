@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Login Form</title>
+<link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body> 
+    <div class="container">
+    
+      <div class="wrapper">
+        <div class="title"><span>Register Form</span></div>
+        <form th:action="@{/processmfa}" th:object="${registerMfaForm}" method="post">
+  		  <p th:if="${error}" class="error" th:utext="${error}"></p>
+
+          <div class="row">
+            <input type="text" name="username" id="inputUsername"  placeholder="username" disabled>
+          </div>
+
+          <div class="row">            
+            <input type="text" name="inputSeed" id="inputSeed" th:value="3eeDR" disabled>
+          </div>
+          
+          <div class="row button">
+            <input type="submit" value="Enable MFA" id="inputSubmitRegistrationMfa">
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

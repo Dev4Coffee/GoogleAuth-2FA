@@ -20,4 +20,6 @@ public class Identity {
 	
 	private String mfaStrategy;
 	private String token;
+	
+	private Boolean active;
 }

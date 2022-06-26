@@ -24,30 +24,14 @@
             <input type="submit" value="Login" id="inputSubmit">
           </div>
         </form>
-      </div>
-   
-      <div class="wrapper" th:if="not ${register}">
-        <div class="title"><span>Register Form</span></div>
-        <form th:action="@{/register}" th:object="${registerForm}" method="post">
-  		  <p th:if="${error}" class="error" th:utext="${error}"></p>
-
-          <div class="row">
-            <input type="text" name="username" id="inputUsername"  placeholder="username">
-          </div>
-
-          <div class="row">            
-            <input type="password" name="password" id="inputPassword" placeholder="password">
-          </div>
-
-          <div class="row">            
-            <input type="password" name="passwordConfirm" id="inputPasswordConfirm" placeholder="confirm password">
-          </div>
           
+        <form th:action="@{/register}" th:object="${registerForm}" method="post">
           <div class="row button">
-            <input type="submit" value="Register" id="inputSubmitRegistration">
+            <input type="submit" value="Register >>" id="inputRegister">
           </div>
         </form>
       </div>
+   
     </div>
   </body>
 </html>

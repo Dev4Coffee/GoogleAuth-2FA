@@ -92,7 +92,7 @@ public class LoginTest {
 			System.out.println(c.getName() +" " + c.getValue());
 		});
 		
-		Assertions.assertThat(driver.manage().getCookieNamed("authorization")).isNotNull();
+		Assertions.assertThat(driver.manage().getCookieNamed("Authorization")).isNotNull();
 		
 		driver.quit();
 		
