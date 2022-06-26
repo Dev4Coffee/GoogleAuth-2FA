@@ -10,7 +10,7 @@
     
       <div class="wrapper">
         <div class="title"><span>Register Form</span></div>
-        <form th:action="@{/registermfa}" th:object="${registerForm}" method="post">
+        <form th:action="@{/processregister}" th:object="${registerForm}" method="post">
   		  <p th:if="${error}" class="error" th:utext="${error}"></p>
 
           <div class="row">

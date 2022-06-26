@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 public class Identity {
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long identity_id;
 	private String name;
 	private String password;
@@ -22,4 +22,6 @@ public class Identity {
 	private String token;
 	
 	private Boolean active;
+	
+	private String googleAuthSecret;
 }

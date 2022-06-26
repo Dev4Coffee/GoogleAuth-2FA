@@ -5,9 +5,23 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+
+import de.janeckert.ga2fa.repositories.GoogleAuthRepository;
 
 @SpringBootApplication
 public class GoogleAuth2FaApplication {
+	private GoogleAuthRepository repo;
+	
+	
+
+	public GoogleAuth2FaApplication(GoogleAuthRepository repo) {
+		super();
+		this.repo = repo;
+	}
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(GoogleAuth2FaApplication.class, args);
@@ -26,5 +40,12 @@ public class GoogleAuth2FaApplication {
 		}
 		return null;
 
+	}
+	
+	@Bean
+	public GoogleAuthenticator createGoogleAuthenticator() {
+        GoogleAuthenticator googleAuthenticator = new GoogleAuthenticator();
+        googleAuthenticator.setCredentialRepository(this.repo);
+        return googleAuthenticator;
 	}
 }

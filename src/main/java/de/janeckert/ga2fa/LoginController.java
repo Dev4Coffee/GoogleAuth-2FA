@@ -20,6 +20,7 @@ import de.janeckert.ga2fa.configuration.ApplicationConfiguration;
 import de.janeckert.ga2fa.entities.Authentication;
 import de.janeckert.ga2fa.entities.Identity;
 import de.janeckert.ga2fa.entities.LoginCredentials;
+import de.janeckert.ga2fa.entities.RegisterForm;
 import de.janeckert.ga2fa.geo.GeoCoordinate;
 import de.janeckert.ga2fa.service.AuthenticationEventService;
 import de.janeckert.ga2fa.service.IdentityService;
@@ -50,23 +51,30 @@ public class LoginController {
 	}
 
 	@GetMapping("/")
-	public String showLogin(Model m, HttpServletRequest request, HttpServletResponse response) {
+	public String handleEntry(Model m, HttpServletRequest request, HttpServletResponse response) {
 		log.info("Reached root page.");
 
 		String authValue = GoogleAuth2FaApplication.getAuthorizationCookieValue(request);
 		
+		
+		// Scenario "There is no authorization cookie"
 		if (null == authValue) {
 			log.info("No authentication information found --> login");
 			return "auth";
 		}
+		
+		// Scenario "There is an empty cookie" (weird edge scenario)
 		if (authValue.isBlank()) {
 			log.info("Empty authentication information found --> removal --> login");
 			removeAuthCookie(response);
 			return "auth";
 		}
 		
+		// Senario "There is an invalid token present" (it outdated ...)
 		if (!this.tokenService.validate(authValue)) {
 			log.info("Non-empty but invalid token found --> removal --> login");
+			removeAuthCookie(response);
+			return "auth";
 		}
 		
 		log.info("User authenticated --> welcome");
@@ -90,9 +98,6 @@ public class LoginController {
 				return "auth";
 			}
 			
-		
-			
-
 			GeoCoordinate coord = this.geoclient.resolveGeoLocation(request.getRemoteAddr());
 			String device = Base64.getEncoder().encodeToString(request.getHeader("User-Agent").getBytes());
 			// Save AuthN
@@ -158,10 +163,35 @@ public class LoginController {
 	}
 	
 	@PostMapping("/register")
-	public String handleRegister(HttpServletRequest request, HttpServletResponse response, @ModelAttribute(name="registerForm") LoginCredentials login) {
+	public String prepareRegister(HttpServletRequest request, HttpServletResponse response, @ModelAttribute(name="registerForm") LoginCredentials login) {
 		log.info("Reached first registration step to provide username and password.");
 		return "register";
+	}
+	
+	@PostMapping("/processregister")
+	public String processRegister(HttpServletRequest request, HttpServletResponse response, @ModelAttribute(name="registerForm") RegisterForm data, Model model) {
+		log.info("Received username and password.");
 		
+		log.info(String.format("Registration data: Username: %s, Password: %s, Password confirm: %s", data.getUsername(), data.getPassword(), data.getPasswordConfirm()));
+		
+		if (!data.getPassword().equals(data.getPasswordConfirm())) {
+			model.addAttribute("error", "Passwords do not match");
+			return "register";
+		}
+		
+		Identity subject = this.identityService.retrieveIdentity(data.getUsername());
+		if (null != subject) {
+			model.addAttribute("error", "Username already taken.");
+			return "register";			
+		}
+		
+		Identity newIdentity = new Identity();
+		newIdentity.setName(data.getUsername());
+		newIdentity.setPassword(data.getPassword());
+		newIdentity.setActive(false);
+		this.identityService.saveIdentity(newIdentity);
+		
+		return "registermfa";
 	}
 	
 	@PostMapping("/registermfa")

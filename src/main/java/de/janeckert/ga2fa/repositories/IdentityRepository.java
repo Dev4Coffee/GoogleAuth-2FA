@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import com.warrenstrange.googleauth.ICredentialRepository;
+
 import de.janeckert.ga2fa.entities.Identity;
 
 @Repository
