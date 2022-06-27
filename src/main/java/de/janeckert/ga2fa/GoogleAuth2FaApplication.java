@@ -39,8 +39,8 @@ public class GoogleAuth2FaApplication {
 			}
 		}
 		return null;
-
 	}
+	
 	
 	@Bean
 	public GoogleAuthenticator createGoogleAuthenticator() {

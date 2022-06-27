@@ -14,13 +14,15 @@
   		  <p th:if="${error}" class="error" th:utext="${error}"></p>
 
           <div class="row">
-            <input type="text" name="username" id="inputUsername"  placeholder="username" disabled>
+            <input type="text" name="username" id="inputUsername"  th:value="${uname}" disabled>
           </div>
 
           <div class="row">            
-            <input type="text" name="inputSeed" id="inputSeed" th:value="3eeDR" disabled>
+            <input type="text" name="inputSeed" id="inputSeed" th:value="${key}" disabled>
           </div>
           
+
+	 	  <img th:src="${qr}" width="250" height="250"> 
           <div class="row button">
             <input type="submit" value="Enable MFA" id="inputSubmitRegistrationMfa">
           </div>

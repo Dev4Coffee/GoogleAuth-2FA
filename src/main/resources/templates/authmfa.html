@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Login Form</title>
+<link th:href="@{/css/style.css}" rel="stylesheet">
+</head>
+<body> 
+    <div class="container">
+    
+      <div class="wrapper">
+        <div class="title"><span>Please provide the Google Authenticator code</span></div>
+        <form th:action="@{/login2fa}" th:object="${login2faForm}" method="post">
+  		  <p th:if="${error}" class="error" th:utext="${error}"></p>
+
+          <div class="row">           
+            <input type="text" name="username" id="inputUsername" th:value="${uname}" disabled>
+          </div>
+
+          <div class="row">           
+            <input type="text" name="totp" id="inputTotp">
+          </div>
+
+          <div class="row button">
+            <input type="submit" value="Submit" id="inputSubmit">
+          </div>
+
+        </form>
+      </div>
+   
+    </div>
+  </body>
+</html>

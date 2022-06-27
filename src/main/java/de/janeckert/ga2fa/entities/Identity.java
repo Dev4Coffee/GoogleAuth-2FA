@@ -18,7 +18,6 @@ public class Identity {
 	private String name;
 	private String password;
 	
-	private String mfaStrategy;
 	private String token;
 	
 	private Boolean active;

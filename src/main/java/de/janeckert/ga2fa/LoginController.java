@@ -1,8 +1,16 @@
 package de.janeckert.ga2fa;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Base64;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,13 +20,18 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.beust.jcommander.Strings;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 
 import de.janeckert.ga2fa.clients.GeoLocatorClient;
 import de.janeckert.ga2fa.configuration.ApplicationConfiguration;
 import de.janeckert.ga2fa.entities.Authentication;
 import de.janeckert.ga2fa.entities.Identity;
+import de.janeckert.ga2fa.entities.Login2faCredentials;
 import de.janeckert.ga2fa.entities.LoginCredentials;
 import de.janeckert.ga2fa.entities.RegisterForm;
 import de.janeckert.ga2fa.geo.GeoCoordinate;
@@ -36,18 +49,21 @@ public class LoginController {
 	private TokenService tokenService;
 	private GeoLocatorClient geoclient;
 	private ApplicationConfiguration cfg;
+	private GoogleAuthenticator googleAuthenticator;
 
 
 
 
 	public LoginController(IdentityService identityService, AuthenticationEventService authenticationService,
-			TokenService tokenService, GeoLocatorClient geoclient, ApplicationConfiguration cfg) {
+			TokenService tokenService, GeoLocatorClient geoclient, ApplicationConfiguration cfg,
+			GoogleAuthenticator googleAuthenticator) {
 		super();
 		this.identityService = identityService;
 		this.authenticationService = authenticationService;
 		this.tokenService = tokenService;
 		this.geoclient = geoclient;
 		this.cfg = cfg;
+		this.googleAuthenticator = googleAuthenticator;
 	}
 
 	@GetMapping("/")
@@ -139,12 +155,41 @@ public class LoginController {
 			m.addAttribute("active", subject.getActive());
 			m.addAttribute("location", "(" + latitude + " , " + longitude + ")");
 			
+			if (this.authenticationService.isMfaHappening(subject.getName(), device, latitude, longitude)) {
+				return "authmfa";
+			}
+			
 			return "welcome";
 		}
+		
+		
 		m.addAttribute("error", "Credentials Incorrect");
 		return "auth";
 	}
 	
+	@PostMapping("/login2fa")
+	public String login2fa(@ModelAttribute(name="login2faForm") Login2faCredentials login, Model m, HttpServletRequest request, HttpServletResponse response) {
+		
+		log.info(String.format("Submitted credentials: totp: %s", login.getTotp()) );
+		
+		String token = GoogleAuth2FaApplication.getAuthorizationCookieValue(request);
+		this.tokenService.validate(GoogleAuth2FaApplication.getAuthorizationCookieValue(request));
+		
+		String subject = this.tokenService.returnClaim(token, "sub");
+		Boolean isAuthorized = this.googleAuthenticator.authorizeUser(subject, login.getTotp());
+		
+		if (isAuthorized) {
+			m.addAttribute("uname", subject);
+			m.addAttribute("token", token);
+			m.addAttribute("active", this.tokenService.returnClaim(token, "active"));
+			m.addAttribute("location", this.tokenService.returnClaim(token, "location"));
+			return "welcome";
+		}
+		else {
+			m.addAttribute("uname", subject);
+			return "authmfa";
+		}
+	}
 	
 	@PostMapping("/logout")
 	public String handleLogout(HttpServletRequest request, HttpServletResponse response) {
@@ -169,7 +214,7 @@ public class LoginController {
 	}
 	
 	@PostMapping("/processregister")
-	public String processRegister(HttpServletRequest request, HttpServletResponse response, @ModelAttribute(name="registerForm") RegisterForm data, Model model) {
+	public String processRegister(HttpServletRequest request, HttpServletResponse response, @ModelAttribute(name="registerForm") RegisterForm data, Model model) throws WriterException, IOException {
 		log.info("Received username and password.");
 		
 		log.info(String.format("Registration data: Username: %s, Password: %s, Password confirm: %s", data.getUsername(), data.getPassword(), data.getPasswordConfirm()));
@@ -188,10 +233,24 @@ public class LoginController {
 		Identity newIdentity = new Identity();
 		newIdentity.setName(data.getUsername());
 		newIdentity.setPassword(data.getPassword());
-		newIdentity.setActive(false);
+		newIdentity.setActive(true);
 		this.identityService.saveIdentity(newIdentity);
 		
-		return "registermfa";
+		GoogleAuthenticatorKey key = this.googleAuthenticator.createCredentials(data.getUsername());
+		model.addAttribute("uname", data.getUsername());
+		model.addAttribute("key", key.getKey());
+		
+		QRCodeWriter qrCodeWriter = new QRCodeWriter();
+
+        String otpAuthURL = GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL("GoogleAuth-2FA-App", data.getUsername(), key);
+
+        BitMatrix bitMatrix = qrCodeWriter.encode(otpAuthURL, BarcodeFormat.QR_CODE, 200, 200);
+
+        ServletOutputStream outputStream = response.getOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
+        outputStream.close();
+        
+		throw new RuntimeException("Pic is on its way!");
 	}
 	
 	@PostMapping("/registermfa")
@@ -205,6 +264,8 @@ public class LoginController {
 		log.info("Mfa information submitted.");
 		return "redirect:/";
 	}
+	
+
 	
 	private static void removeAuthCookie(HttpServletResponse response) {
 		log.info("Authorization cookie is being removed.");

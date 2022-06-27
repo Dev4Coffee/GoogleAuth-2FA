@@ -37,4 +37,10 @@ public class ApplicationConfiguration {
 	 */
 	@NotNull
 	private Integer deviceRetentionTime;
+	
+	/**
+	 *   Maximum travel speed deemed possible in km/h
+	 */
+	@NotNull
+	private Integer maximumTravelSpeed;
 }
