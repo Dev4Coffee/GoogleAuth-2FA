@@ -3,6 +3,7 @@ Web application with 2FA with the Google Authenticator App
 
 # How to run
 docker build -t googleAuth .
+
 docker run -p 8080:8080 googleAuth
 
 to access the application, navigate to http://localhost:8080 with your local browser.
