@@ -15,8 +15,6 @@ The whole server-side application state is being kept in an in-memory database w
 Please keep in mind that the application uses an external web API to map IPs to geographic coordinates. Hence, it needs internet access. The API is nice but also rate limited, if the validation via the API fails, all successful authorization attempts will be assumed to have happened from latitude=longitude=0.
 There is a switch that allows to use a randomizer instead that will existing but arbitrary coords instead.
 
-docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" googleAuth
-
 The image can be run setting environment variables to customize the app's behaviour.
 
 | Name of Environment variable  | Value(s) | Effect | Default |
@@ -34,10 +32,10 @@ docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MF
 
 #Known bugs:
 - Setting APP_MFA_STRATEGY to anything else than the supported values will not result in an error but in erratic program behaviour.
-- The JWT token does NOT use Signatures, therefore the JWT can be tampered with
+- The JWT token does NOT use Signatures, therefore, the JWT can be tampered with
 - The user registration is not sanitizing the username and the password
-- Displaying the QR code during registration sometimes failed when not done in its seperate window. This makes it necessare to move away from there manually.
-- When moving from the registration form where username and password is provided to the QR, qn exception is thrown in the terminal. Unpretty but the app is fine.
+- Displaying the QR code during registration sometimes failed when not done in its seperate window. This makes it necessary to move away from there manually.
+- When moving from the registration form where username and password is provided to the QR, an exception is thrown in the terminal. Unpretty but the app is fine.
 
 #Missing features:
 - the 2FA strategy does only support global configuration, not individual overrides.
