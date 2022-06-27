@@ -6,7 +6,10 @@ docker build -t googleAuth .
 docker run -p 8080:8080 googleAuth
 
 to access the application, navigate to http://localhost:8080 with your local browser.
-The whole server-side application state is being kept in an in-memory database which is exposed via a GUI under http://localhost:8080/h2-console. login: sa, password: password.
+The whole server-side application state is being kept in an in-memory database which is exposed via a GUI under http://localhost:8080/h2-console. login: sa, password: password. Make sure it looks like this.
+
+![image](https://user-images.githubusercontent.com/58360529/175850082-453c1fe2-9060-4019-8d4f-f889a221cf8d.png)
+
 
 Please keep in mind that the application uses an external web API to map IPs to geographic coordinates. Hence, it needs internet access. The API is nice but also rate limited, if the validation via the API fails, all successful authorization attempts will be assumed to have happened from latitude=longitude=0.
 There is a switch that allows to use a randomizer instead that will existing but arbitrary coords instead.
