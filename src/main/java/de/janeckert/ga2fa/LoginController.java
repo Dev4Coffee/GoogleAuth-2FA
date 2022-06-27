@@ -80,7 +80,7 @@ public class LoginController {
 		}
 		
 		// Scenario "There is an empty cookie" (weird edge scenario)
-		if (authValue.isBlank()) {
+		if (authValue.isEmpty()) {
 			log.info("Empty authentication information found --> removal --> login");
 			removeAuthCookie(response);
 			return "auth";

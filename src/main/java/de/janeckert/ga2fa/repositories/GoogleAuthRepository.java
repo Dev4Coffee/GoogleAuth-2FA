@@ -22,7 +22,7 @@ public class GoogleAuthRepository implements ICredentialRepository {
 	public String getSecretKey(String userName) {
 		Optional<Identity> subject = this.identityrepository.findByName(userName);
 		
-		if (subject.isEmpty()) {
+		if (!subject.isPresent()) {
 			throw new RuntimeException("Username unknown: " + userName);
 		}
 		
@@ -33,7 +33,7 @@ public class GoogleAuthRepository implements ICredentialRepository {
 	public void saveUserCredentials(String userName, String secretKey, int validationCode, List<Integer> scratchCodes) {
 		Optional<Identity> subjectOptional = this.identityrepository.findByName(userName);
 		
-		if (subjectOptional.isEmpty()) {
+		if (!subjectOptional.isPresent()) {
 			throw new RuntimeException("Username unknown: " + userName);
 		}
 		
