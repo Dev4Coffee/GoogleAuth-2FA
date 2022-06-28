@@ -36,6 +36,8 @@ docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MF
 - The user registration is not sanitizing the username and the password
 - Displaying the QR code during registration sometimes failed when not done in its seperate window. This makes it necessary to move away from there manually.
 - When moving from the registration form where username and password is provided to the QR, an exception is thrown in the terminal. Unpretty but the app is fine.
+- providing a correct password but wrong Google Authenticator code results in no error message.
+
 
 #Missing features:
 - the 2FA strategy does only support global configuration, not individual overrides.
