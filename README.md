@@ -2,9 +2,9 @@
 Web application with 2FA with the Google Authenticator App
 
 # How to run
-docker build -t googleAuth .
+docker build -t googleauth .
 
-docker run -p 8080:8080 googleAuth
+docker run -p 8080:8080 googleauth
 
 to access the application, navigate to http://localhost:8080 with your local browser.
 The whole server-side application state is being kept in an in-memory database which is exposed via a GUI under http://localhost:8080/h2-console. login: sa, password: password. Make sure it looks like this.
@@ -27,7 +27,7 @@ The image can be run setting environment variables to customize the app's behavi
 
 Example:
 
-docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MFA_STRATEGY=on" googleAuth
+docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MFA_STRATEGY=on" googleauth
 
 
 #Known bugs:
