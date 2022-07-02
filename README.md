@@ -2,8 +2,9 @@
 Web application with 2FA with the Google Authenticator App
 
 # How to run
-docker build -t googleAuth .
-docker run -p 8080:8080 googleAuth
+docker build -t googleauth .
+
+docker run -p 8080:8080 googleauth
 
 to access the application, navigate to http://localhost:8080 with your local browser.
 The whole server-side application state is being kept in an in-memory database which is exposed via a GUI under http://localhost:8080/h2-console. login: sa, password: password. Make sure it looks like this.
@@ -13,8 +14,6 @@ The whole server-side application state is being kept in an in-memory database w
 
 Please keep in mind that the application uses an external web API to map IPs to geographic coordinates. Hence, it needs internet access. The API is nice but also rate limited, if the validation via the API fails, all successful authorization attempts will be assumed to have happened from latitude=longitude=0.
 There is a switch that allows to use a randomizer instead that will existing but arbitrary coords instead.
-
-docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" googleAuth
 
 The image can be run setting environment variables to customize the app's behaviour.
 
@@ -28,15 +27,17 @@ The image can be run setting environment variables to customize the app's behavi
 
 Example:
 
-docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MFA_STRATEGY=on" googleAuth
+docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MFA_STRATEGY=on" googleauth
 
 
 #Known bugs:
 - Setting APP_MFA_STRATEGY to anything else than the supported values will not result in an error but in erratic program behaviour.
-- The JWT token does NOT use Signatures, therefore the JWT can be tampered with
+- The JWT token does NOT use Signatures, therefore, the JWT can be tampered with
 - The user registration is not sanitizing the username and the password
-- Displaying the QR code during registration sometimes failed when not done in its seperate window. This makes it necessare to move away from there manually.
-- When moving from the registration form where username and password is provided to the QR, qn exception is thrown in the terminal. Unpretty but the app is fine.
+- Displaying the QR code during registration sometimes failed when not done in its seperate window. This makes it necessary to move away from there manually.
+- When moving from the registration form where username and password is provided to the QR, an exception is thrown in the terminal. Unpretty but the app is fine.
+- providing a correct password but wrong Google Authenticator code results in no error message.
+
 
 #Missing features:
 - the 2FA strategy does only support global configuration, not individual overrides.
