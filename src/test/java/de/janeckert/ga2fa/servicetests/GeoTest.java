@@ -1,6 +1,7 @@
 package de.janeckert.ga2fa.servicetests;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import de.janeckert.ga2fa.clients.GeoLocatorClient;
@@ -12,6 +13,7 @@ public class GeoTest {
 	private static final String HOME_IP = "2a02:a03f:616a:bb00:9909:129a:4953:7e3a";
 	
 	@Test
+	@Disabled("API rate limits render this test useless.")
 	public void testIpApi() {
 		GeoLocatorClient client = new GeoLocatorClientIpApi();
 		

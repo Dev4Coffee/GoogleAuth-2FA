@@ -7,5 +7,5 @@ import lombok.Data;
 @Controller
 @Data
 public class Login2faCredentials {
-	private Integer totp;
+	private String totp;
 }

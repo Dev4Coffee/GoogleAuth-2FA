@@ -24,6 +24,9 @@ import de.janeckert.ga2fa.service.JwtTokenService;
 public class TokenValidationTest {
 	private JwtTokenService service;
 	
+	private final String ISSUER = "GoogleAuth-2FA-App";
+	private final String SUBJECT = "Will";
+	
 	@BeforeEach
 	public void init() {
 		ApplicationConfiguration cfg = new ApplicationConfiguration();
@@ -45,18 +48,15 @@ public class TokenValidationTest {
 				
 		Date expiry = Date.from(Instant.now().plus(30, ChronoUnit.SECONDS));
 		
-		String issuer = "GoogleAuth-2FA-App";
-		String subject = "Will";
-		
 		String token = JWT.create()
-				.withIssuer(issuer)
+				.withIssuer(ISSUER)
 				.withExpiresAt(expiry)
-				.withSubject(subject)
+				.withSubject(SUBJECT)
 				.sign(Algorithm.none());
 		
 		Boolean result = this.service.validate(token);
 		
-		//Assertions.assertThat(result).isTrue();
+		Assertions.assertThat(result).isTrue();
 	}
 	
 	@Test
@@ -64,13 +64,10 @@ public class TokenValidationTest {
 				
 		Date expiry = Date.from(Instant.now().minus(30, ChronoUnit.SECONDS));
 		
-		String issuer = "GoogleAuth-2FA-App";
-		String subject = "Will";
-		
 		String token = JWT.create()
-				.withIssuer(issuer)
+				.withIssuer(ISSUER)
 				.withExpiresAt(expiry)
-				.withSubject(subject)
+				.withSubject(SUBJECT)
 				.sign(Algorithm.none());
 		
 		Boolean result = this.service.validate(token);
@@ -79,24 +76,72 @@ public class TokenValidationTest {
 	}
 	
 	@Test
-	public void testClaims() {
+	public void testIssuerClaim() {
 		Date expiry = Date.from(Instant.now().plus(30, ChronoUnit.SECONDS));
 		
-		String issuer = "GoogleAuth-2FA-App";
-		String subject = "Will";
-		
 		String token = JWT.create()
-				.withIssuer(issuer)
+				.withIssuer(ISSUER)
 				.withExpiresAt(expiry)
-				.withSubject(subject)
+				.withSubject(SUBJECT)
 				.sign(Algorithm.none());
 		
-		
-		assertThat(this.service.returnClaim(token, "iss")).isEqualTo(issuer);
-		assertThat(this.service.returnClaim(token, "sub")).isEqualTo(subject);
-		assertThat(this.service.returnClaim(token, "exp")).isNotBlank();
-		
-		
-		
+		assertThat(this.service.returnIssuer(token)).isEqualTo(ISSUER);
 	}
+
+	@Test
+	public void testSubjectClaim() {
+		Date expiry = Date.from(Instant.now().plus(30, ChronoUnit.SECONDS));
+		
+		String token = JWT.create()
+				.withIssuer(ISSUER)
+				.withExpiresAt(expiry)
+				.withSubject(SUBJECT)
+				.sign(Algorithm.none());
+		
+		assertThat(this.service.returnSubject(token)).isEqualTo(SUBJECT);
+	}
+
+	@Test
+	public void testExpiryClaim() {
+		Date expiry = Date.from(Instant.now().plus(30, ChronoUnit.SECONDS));
+		
+		String token = JWT.create()
+				.withIssuer(ISSUER)
+				.withExpiresAt(expiry)
+				.withSubject(SUBJECT)
+				.sign(Algorithm.none());
+		
+		assertThat(this.service.returnExpiry(token)).isNotBlank();
+	}
+	
+	@Test
+	public void testActiveClaim() {
+		Date expiry = Date.from(Instant.now().plus(30, ChronoUnit.SECONDS));
+		
+		Boolean active = true;
+		
+		String token = JWT.create()
+				.withIssuer(ISSUER)
+				.withExpiresAt(expiry)
+				.withClaim("active", active)
+				.withSubject(SUBJECT)
+				.sign(Algorithm.none());
+		
+		assertThat(this.service.returnActive(token)).isEqualTo("true");
+	}
+	
+	public void testLocationClaim() {
+		Date expiry = Date.from(Instant.now().plus(30, ChronoUnit.SECONDS));
+		
+		String token = JWT.create()
+				.withIssuer(ISSUER)
+				.withExpiresAt(expiry)
+				.withClaim("location", "myLocation")
+				.withSubject(SUBJECT)
+				.sign(Algorithm.none());
+		
+		assertThat(this.service.returnExpiry(token)).isEqualTo("myLocation");
+	}
+
+
 }

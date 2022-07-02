@@ -46,6 +46,20 @@ public class H2IdentityService implements IdentityService {
 		this.identityRepository.save(identity);
 		
 	}
+
+	@Override
+	public boolean isMfaReady(String name) {
+		Identity subject = this.retrieveIdentity(name);
+		return this.isMfaReady(subject);
+	}
+
+	@Override
+	public boolean isMfaReady(Identity identity) {
+		Boolean isReady = identity.getActive().equals(Boolean.TRUE) && (null != identity.getGoogleAuthSecret()) && !identity.getGoogleAuthSecret().isEmpty();
+		return isReady;
+	}
+	
+	
 	
 	
 

@@ -8,4 +8,6 @@ public interface IdentityService {
 	public Identity retrieveIdentity(String name);
 	public void saveIdentity(Identity identity);
 	public Collection<Identity> retrieveAllIdentities();
+	public boolean isMfaReady(String name);
+	public boolean isMfaReady(Identity identity);
 }

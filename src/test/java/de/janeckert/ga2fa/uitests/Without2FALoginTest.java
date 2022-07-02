@@ -1,8 +1,11 @@
 package de.janeckert.ga2fa.uitests;
 
+import java.io.File;
+
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -13,26 +16,22 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT,
-properties = "server.port=9999")
-public class LoginTest {
-	
-	private final String BASE_URL = "http://localhost:9999";
-	
-	private final static String INVALID_USERNAME = "Whatever";
-	private final static String INVALID_PASSWORD = "Whatever";
-	private final static String ERROR_INVALID_CREDENTIALS = "Credentials Incorrect";
-	private final static String SUCCESS_VALID_CREDENTIALS = "You are authenticated!";
-	private final static String VALID_USERNAME = "Will";
-	private final static String VALID_PASSWORD = "Hireme";
+properties = {"server.port=9998", "app.mfa-strategy=off"})
+public class Without2FALoginTest {
+	public final static String BASE_URL = "http://localhost:9998";
 	
 	@BeforeAll
 	static void init() {
-		System.setProperty("webdriver.edge.driver", "D:\\Selenium\\msedgedriver.exe");
+		System.setProperty("webdriver.edge.driver", TestInfo.PATH_TO_EDGE_DRIVER);
+		
+		File driverFile = new File(TestInfo.PATH_TO_EDGE_DRIVER);
+		Assumptions.assumeThat(driverFile).exists();
 	}
 	
 	@Test
 	public void whenUsingWrongCredentials_shouldRejectLogin() {
 		EdgeOptions options = new EdgeOptions();
+		options.setHeadless(true);
 		WebDriver driver = new EdgeDriver(options);
 		
 		driver.get(BASE_URL);
@@ -41,11 +40,11 @@ public class LoginTest {
 		WebElement pw = driver.findElement(By.id("inputPassword"));
 		WebElement submit = driver.findElement(By.id("inputSubmit"));
 		
-		un.sendKeys(INVALID_USERNAME);
-		pw.sendKeys(INVALID_PASSWORD);
+		un.sendKeys(TestInfo.INVALID_USERNAME);
+		pw.sendKeys(TestInfo.INVALID_PASSWORD);
 		submit.click();
 		
-		Assertions.assertThat(driver.getPageSource()).contains(ERROR_INVALID_CREDENTIALS);
+		Assertions.assertThat(driver.getPageSource()).contains(TestInfo.ERROR_INVALID_CREDENTIALS_UI);
 		
 		driver.quit();
 		
@@ -54,6 +53,7 @@ public class LoginTest {
 	@Test
 	public void whenUsingCorrectCredentials_shouldAcceptLogin() {
 		EdgeOptions options = new EdgeOptions();
+		options.setHeadless(true);
 		WebDriver driver = new EdgeDriver(options);
 		
 		driver.get(BASE_URL);
@@ -62,11 +62,11 @@ public class LoginTest {
 		WebElement pw = driver.findElement(By.id("inputPassword"));
 		WebElement submit = driver.findElement(By.id("inputSubmit"));
 		
-		un.sendKeys(VALID_USERNAME);
-		pw.sendKeys(VALID_PASSWORD);
+		un.sendKeys(TestInfo.VALID_USERNAME);
+		pw.sendKeys(TestInfo.VALID_PASSWORD);
 		submit.click();
 		
-		Assertions.assertThat(driver.getPageSource()).contains(SUCCESS_VALID_CREDENTIALS);
+		Assertions.assertThat(driver.getPageSource()).contains(TestInfo.SUCCESS_VALID_CREDENTIALS_UI);
 				
 		driver.quit();
 		
@@ -76,6 +76,7 @@ public class LoginTest {
 	@Test
 	public void whenUsingCorrectCredentials_shouldReceiveAuthNCookie() {
 		EdgeOptions options = new EdgeOptions();
+		options.setHeadless(true);
 		WebDriver driver = new EdgeDriver(options);
 		
 		driver.get(BASE_URL);
@@ -84,8 +85,8 @@ public class LoginTest {
 		WebElement pw = driver.findElement(By.id("inputPassword"));
 		WebElement submit = driver.findElement(By.id("inputSubmit"));
 		
-		un.sendKeys(VALID_USERNAME);
-		pw.sendKeys(VALID_PASSWORD);
+		un.sendKeys(TestInfo.VALID_USERNAME);
+		pw.sendKeys(TestInfo.VALID_PASSWORD);
 		submit.click();
 		
 		driver.manage().getCookies().forEach(c -> {
@@ -100,8 +101,10 @@ public class LoginTest {
 
 	
 	@Test
-	public void whenVisitingLoginPage_TheninputElementsShouldBePresent() {
+	@DisplayName("WHEN you visit the index page without any Authentication THEN you should see the login screen.")
+	public void whenVisitingLoginPageUnAuthenticated_TheninputElementsShouldBePresent() {
 		EdgeOptions options = new EdgeOptions();
+		options.setHeadless(true);
 		WebDriver driver = new EdgeDriver(options);
 		
 		driver.get(BASE_URL);

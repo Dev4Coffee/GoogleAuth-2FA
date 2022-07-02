@@ -3,11 +3,13 @@ package de.janeckert.ga2fa.service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import de.janeckert.ga2fa.configuration.ApplicationConfiguration;
@@ -43,10 +45,46 @@ public class JwtTokenService implements TokenService {
 		return token;
 	}
 
-	@Override
-	public String returnClaim(String token, String claimname) {
-		DecodedJWT decodedJWT = JWT.decode(token);
+	private String returnClaim(DecodedJWT decodedJWT, String claimname) {
 		String result = decodedJWT.getClaim(claimname).asString();
+		return result;
+	}
+	
+	
+
+	@Override
+	public String returnExpiry(String token) {
+		DecodedJWT decodedJWT = JWT.decode(token);
+		String result = decodedJWT.getIssuer();
+		return result;
+	}
+	
+
+	@Override
+	public String returnSubject(String token) {
+		DecodedJWT decodedJWT = JWT.decode(token);
+		String result = decodedJWT.getSubject();
+		return result;
+	}
+
+	@Override
+	public String returnIssuer(String token) {
+		DecodedJWT decodedJWT = JWT.decode(token);
+		String result = decodedJWT.getIssuer();
+		return result;
+	}
+	
+	@Override
+	public String returnActive(String token) {
+		DecodedJWT decodedJWT = JWT.decode(token);
+		Claim result = decodedJWT.getClaims().get("active");
+		return Boolean.toString(result.asBoolean());
+	}
+
+	@Override
+	public String returnLocation(String token) {
+		DecodedJWT decodedJWT = JWT.decode(token);
+		String result = this.returnClaim(decodedJWT, "location");
 		return result;
 	}
 
@@ -72,7 +110,7 @@ public class JwtTokenService implements TokenService {
 			return false;
 		}
 		
-		Identity subject = this.identityService.retrieveIdentity(this.returnClaim(jwt, "sub"));
+		Identity subject = this.identityService.retrieveIdentity(this.returnClaim(decodedJWT, "sub"));
 		if (!jwt.equals(subject.getToken())) {
 			log.warn("Token does not match the authorized one.");
 		}
