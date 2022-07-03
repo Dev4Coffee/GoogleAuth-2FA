@@ -1,5 +1,7 @@
 package de.janeckert.ga2fa.configuration;
 
+import java.util.List;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -14,6 +16,7 @@ import lombok.Data;
 @Data
 @Validated
 public class ApplicationConfiguration {
+	public final static List<String> supportedMfaStrategies = List.of("on", "off", "adaptive");
 	
 	/**
 	 *  Lifetime in seconds of access tokens issued on a successful login.
@@ -43,4 +46,5 @@ public class ApplicationConfiguration {
 	 */
 	@NotNull
 	private Integer maximumTravelSpeed;
+	
 }

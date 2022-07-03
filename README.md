@@ -1,4 +1,7 @@
 # Release Notes:
+03/07/2022
+- declaring an unsupported APP_MFA_STRATEGY now fails the application start with an easily understandable error message
+
 02/07/2022
 - fix bug "providing a correct password but wrong Google Authenticator code results in no error message."
 - fix Selenium tests failing to run because target system has no edge Driver installed.
@@ -38,7 +41,6 @@ docker run -p 8080:8080 -e "SPRING_PROFILES_ACTIVE=MockedGeoLocation" -e "APP_MF
 
 
 #Known bugs:
-- Setting APP_MFA_STRATEGY to anything else than the supported values will not result in an error but in erratic program behaviour.
 - The JWT token does NOT use Signatures, therefore, the JWT can be tampered with
 - The user registration is not sanitizing the username and the password
 - Displaying the QR code during registration sometimes failed when not done in its seperate window. This makes it necessary to move away from there manually.

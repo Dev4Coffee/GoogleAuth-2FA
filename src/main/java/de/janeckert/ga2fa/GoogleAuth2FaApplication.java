@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 
 import de.janeckert.ga2fa.repositories.GoogleAuthRepository;
+import validation.ApplicationConfigurationValidator;
 
 @SpringBootApplication
 public class GoogleAuth2FaApplication {
@@ -66,5 +67,10 @@ public class GoogleAuth2FaApplication {
         GoogleAuthenticator googleAuthenticator = new GoogleAuthenticator();
         googleAuthenticator.setCredentialRepository(this.repo);
         return googleAuthenticator;
+	}
+	
+	@Bean
+	public static ApplicationConfigurationValidator configurationPropertiesValidator() {
+		return new ApplicationConfigurationValidator();
 	}
 }
